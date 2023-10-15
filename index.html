@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محول النص العربي إلى نص عربي بدون نقاط</title>
+    <style>
+        body {
+            font-family: 'Droid Arabic Naskh', sans-serif;
+            background-color: #f7f7f7;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        label {
+            font-size: 18px;
+        }
+        textarea {
+            width: 80%;
+            font-size: 16px;
+            padding: 10px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        .unchanged {
+            background-color: #ffeb3b;
+        }
+    </style>
+</head>
+<body>
+    <h1>محول النص العربي إلى نص عربي بدون نقاط</h1>
+    <form id="arabicForm" dir="rtl" action="submit.php" method="post">
+        <label for="arabicInput">أدخل النص العربي:</label>
+        <textarea id="arabicInput" rows="4" cols="50" placeholder="أدخل النص العربي هنا..."></textarea>
+        <br>
+        <button type="button" onclick="convertToDotless()">تحويل</button>
+    </form>
+    <div id="output" dir="rtl"></div>
+
+    <script>
+        function convertToDotless() {
+            const arabicInput = document.getElementById("arabicInput").value;
+            const dotlessOutput = arabicToDotless(arabicInput);
+            document.getElementById("output").innerHTML = highlightUnchangedWords(arabicInput, dotlessOutput);
+        }
+
+        function arabicToDotless(inputText) {
+            const dotless_beh = 'ٮ';
+            const dotless_feh = 'ڡ';
+            const dotless_qaf = 'ٯ';
+            const noon_ghunna = 'ں';
+
+            const dottedToDotless = {
+                'ب': dotless_beh,
+                'ف': dotless_feh,
+                'ق': dotless_qaf,
+                "ش": "س",
+                "ت": dotless_beh,
+                "ث": dotless_beh,
+                "ظ": "ط",
+                "ض": "ص",
+                "غ": "ع",
+                "ز": "ر",
+                "ذ": "د",
+                "ج": "ح",
+                "خ": "ح",
+                "ة": "ه",
+                // Add more mappings for other dotted Arabic letters
+            };
+
+            // Function to replace 'ي' based on its position in a word
+            function replaceY(input) {
+                return input.replace(/ي(?=[\s:،؛?؟!.,]|$|َ|ٍ|ِ|ُ|ٌ|ً|ّ)/g, "ى").replace(/ي/g, dotless_beh);
+            }
+
+            function replaceN(input) {
+                return input.replace(/ن(?=[\s:،؛?؟!.,]|$|َ|ٍ|ِ|ُ|ٌ|ً|ّ)/g, noon_ghunna ).replace(/ن/g, dotless_beh);
+            }
+
+            let outputText = '';
+            for (const char of inputText) {
+                if (dottedToDotless[char]) {
+                    outputText += dottedToDotless[char];
+                } else {
+                    outputText += char;
+                }
+            }
+
+            // Apply the 'ي' and 'ن' replacement functions
+            outputText = replaceY(outputText);
+            outputText = replaceN(outputText);
+
+            return outputText;
+        }
+
+        function highlightUnchangedWords(inputText, outputText) {
+            const inputWords = inputText.split(/[\s:]+/);
+            const outputWords = outputText.split(/[\s:]+/);
+
+            let result = '';
+
+            for (let i = 0; i < inputWords.length; i++) {
+                if (i < outputWords.length) {
+                    if (inputWords[i] === outputWords[i]) {
+                        result += `<span class="unchanged">${inputWords[i]}</span>`;
+                    } else {
+                        result += outputWords[i];
+                    }
+                } else {
+                    result += inputWords[i];
+                }
+
+                if (i < inputWords.length - 1) {
+                    result += ' ';
+                }
+            }
+
+            return result;
+        }
+    </script>
+</body>
+</html>
